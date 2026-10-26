@@ -1,0 +1,32 @@
+{
+	"schemaVersion": 1,
+	"id": "vortexoptimizer",
+	"version": "${version}",
+	"name": "Vortex Optimizer",
+	"description": "Measurement-driven client performance work for low-end PCs, designed to complement Sodium.",
+	"authors": [
+		"Vortex Optimizer contributors"
+	],
+	"license": "LGPL-3.0-only",
+	"environment": "client",
+	"entrypoints": {
+		"client": [
+			"io.github.vortexoptimizer.client.VortexOptimizerClient"
+		]
+	},
+	"mixins": [
+		{
+			"config": "vortexoptimizer.client.mixins.json",
+			"environment": "client"
+		}
+	],
+	"depends": {
+		"fabricloader": ">=0.17.3",
+		"minecraft": "~1.21.11",
+		"java": ">=21",
+		"fabric-api": "*"
+	},
+	"suggests": {
+		"sodium": "*"
+	}
+}
