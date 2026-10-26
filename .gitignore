@@ -1,0 +1,45 @@
+# gradle
+
+.gradle/
+build/
+out/
+classes/
+
+# eclipse
+
+*.launch
+
+# idea
+
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# vscode
+
+.settings/
+.vscode/
+bin/
+.classpath
+.project
+
+# macos
+
+*.DS_Store
+
+# fabric
+
+run/
+
+# release artifacts handed out manually
+
+vortex-optimizer-source.zip
+vortex-optimizer-source/
+
+# java
+
+hs_err_*.log
+replay_*.log
+*.hprof
+*.jfr
