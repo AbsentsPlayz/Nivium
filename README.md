@@ -38,3 +38,7 @@ JDK 21+ (`JAVA_HOME`), then `gradlew build` → `build/libs/nivium-0.2.0.jar`.
 
 ## License
 [LGPL-3.0-only](LICENSE) (GPL-3.0 text in [COPYING](COPYING)).
+
+Source: https://github.com/AbsentsPlayz/nivium · Issues: https://github.com/AbsentsPlayz/nivium/issues
+
+Nivium grew out of the earlier Vortex Optimizer client mod; that history is kept in this repository's commits.

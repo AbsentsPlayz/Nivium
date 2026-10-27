@@ -8,8 +8,8 @@
 		"AbsentsPlayz"
 	],
 	"contact": {
-		"sources": "https://github.com/AbsentsPlayz/vortex-optimizer",
-		"issues": "https://github.com/AbsentsPlayz/vortex-optimizer/issues"
+		"sources": "https://github.com/AbsentsPlayz/nivium",
+		"issues": "https://github.com/AbsentsPlayz/nivium/issues"
 	},
 	"license": "LGPL-3.0-only",
 	"environment": "*",

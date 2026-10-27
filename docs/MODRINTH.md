@@ -44,7 +44,7 @@ reversible video preset. These are conveniences: installing Nivium on a server d
 Minecraft **1.21.11** · Fabric Loader **0.17.3+** · **Fabric API** (required on the server)
 
 ### License
-LGPL-3.0-only
+LGPL-3.0-only · Source code: https://github.com/AbsentsPlayz/nivium
 
 ---
 
