@@ -31,7 +31,39 @@ Controls:
   **Warm** runs: 3+ further runs with default 300-frame warm-up.
 - Report mean ± std-dev of average FPS and 1 % low across warm runs; never a single run.
 
-## Recorded results
+## Automated harness (current method, 2026-10-27)
+`gradlew runBenchClient -PbenchLabel=<label> -PbenchSeconds=60 -PbenchJvmArgs="-Dnivium.bench.scene=occluded"`
+(dev-only; `-Dnivium.bench.seconds` activates `BenchHarness`). Each run: restore `run/bench-pristine/nivium-bench`,
+auto-join it (`--quickPlaySingleplayer`), optionally build a scene through the integrated server, settle 25 s,
+record 60 s, write `run/nivium-bench/<label>.json`, quit. Focus pause and the idle FPS limiter are disabled during
+the run. `-Xmx2G`, Sodium 0.8.14, RD 8 / particles decreased / VSync off / FPS uncapped, 1920x974 windowed, Intel UHD.
+Scenes: `occluded` = 180 frozen cows behind a 25x8 stone wall filling the view; `visible` = same cows in view.
+A/B toggles: `-Dnivium.opt.entityCulling=false`, `-Dnivium.opt.rendererCache=false`. Runs were interleaved.
+
+### B-003 Entity optimizations A/B (2026-10-27, 10 runs × 60 s)
+| Scene | Config | avg FPS (run 1, run 2) | mean | 1% low (mean) | p50 ms | p99 ms | GC count / ms (mean) |
+|---|---|---|---|---|---|---|---|
+| occluded | culling + cache **on** | 429.7, 428.4 | **429.1** | 117.3 | **2.12** | **4.81** | **15 / 85** |
+| occluded | culling off | 339.5, 268.5 | 304.0 | 94.7 | 3.05 | 7.25 | 56 / 286 |
+| visible | both on | 333.6, 254.8 | 294.2 | 109.9 | 3.13 | 7.32 | 51 / 283 |
+| visible | both off | 317.4, 249.6 | 283.5 | 76.0 | 3.21 | 7.44 | 53 / 296 |
+| visible | cache off, culling on | 321.0, 273.3 | 297.2 | 108.0 | 3.09 | 6.82 | 48 / 299 |
+
+Occluded scene with culling on: 180 entities culled per frame, 358 ray tests per frame (about 30 fresh evaluations),
+150 cached answers per frame. Visible scene: 18 ray tests per frame, 0 culled.
+
+**Conclusions (measured):**
+- **Occlusion culling** is a clear win when entities are hidden: both "on" runs beat both "off" runs, with +41% mean FPS
+  (range +26% to +60%), median frame time −30%, and 3.7× fewer GCs (hidden entities no longer allocate render states).
+- **Its overhead when nothing is hidden is below measurement noise:** visible-scene differences between configs
+  (~±5%) are smaller than the drift between the two rounds (~20%, the whole machine got slower), so no effect can be claimed.
+- **The renderer cache has no measurable FPS effect** in these runs. It removes work the profiler attributed ~3% of
+  render-thread samples to (R-009), but that is below this machine's run-to-run noise. Kept because it is
+  safe and removes real work, not because of a measured FPS gain.
+- 1% lows and max spikes are dominated by GC/OS-memory noise on this 8 GB machine (e.g. 412 ms and 734 ms spikes in
+  vis-off runs); they're reported but not used to claim improvements.
+
+## Recorded results (earlier, manual)
 
 ### B-001 Smoke test — `run/vortex-benchmarks/20261026-143422-test.json` (2026-10-26)
 **Purpose:** prove the tool works end-to-end. **Not a valid baseline**: freshly generated world,

@@ -2,6 +2,7 @@ package io.github.nivium.client;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import io.github.nivium.Nivium;
+import io.github.nivium.client.bench.BenchHarness;
 import io.github.nivium.client.gui.NiviumScreen;
 import io.github.nivium.client.hud.FrameMeter;
 import io.github.nivium.client.hud.NiviumHud;
@@ -29,6 +30,9 @@ public final class NiviumClient implements ClientModInitializer {
 		openScreenKey = KeyBindingHelper.registerKeyBinding(
 				new KeyMapping("key.nivium.open", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_K, CATEGORY));
 		ClientTickEvents.END_CLIENT_TICK.register(client -> {
+			if (BenchHarness.ENABLED) {
+				BenchHarness.onClientTick(client);
+			}
 			while (openScreenKey.consumeClick()) {
 				if (client.screen == null) {
 					client.setScreen(new NiviumScreen(null));

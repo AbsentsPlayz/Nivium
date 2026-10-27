@@ -32,6 +32,21 @@ loom {
 			sourceSet sourceSets.client
 		}
 	}
+
+	runs {
+		// Developer benchmark: auto-joins run/saves/nivium-bench, records frames, writes run/nivium-bench/<label>.json, quits.
+		//   gradlew runBenchClient -PbenchLabel=base -PbenchSeconds=60 -PbenchJvmArgs="-Dnivium.opt.x=false"
+		benchClient {
+			inherit client
+			configName = "Nivium benchmark"
+			ideConfigGenerated false
+			programArgs "--quickPlaySingleplayer", "nivium-bench"
+			vmArg "-Xmx2G"
+			vmArg "-Dnivium.bench.seconds=" + (project.findProperty('benchSeconds') ?: '60')
+			vmArg "-Dnivium.bench.label=" + (project.findProperty('benchLabel') ?: 'run')
+			((project.findProperty('benchJvmArgs') ?: '') as String).split(' ').findAll { !it.isEmpty() }.each { vmArg it }
+		}
+	}
 }
 
 dependencies {

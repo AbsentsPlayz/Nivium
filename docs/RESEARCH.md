@@ -84,6 +84,27 @@ executed are recorded here. "Not yet verified" items live under *Open questions*
 - **Decision:** Add per-event GC timestamps to reports before touching anything (done: `GcEventLog`).
   Do not start allocation-reduction work until stalls are attributed.
 
+## R-009 Render-thread profile, Sodium 0.8.14 + Nivium, 1.21.11 (2026-10-27)
+- **Source:** our own JFR recording (`settings=profile`, 55 s, Intel UHD, RD 8), filtered to the Render thread
+  (811 execution samples) plus allocation samples; analysis scripts in the session notes.
+- **Where the render thread goes:** `LevelRenderer.renderLevel` 39% (FrameGraph execute 13%, Sodium terrain
+  setup ~9%, **entity visibility selection `extractVisibleEntities` ~7%**), hand/held item ~10% (mostly
+  `BufferSource.endBatch`, i.e. real draw submission), HUD/GUI ~7%, `ClientLevel.animateTick` ~4%.
+- **Entity visibility detail:** `EntityRenderDispatcher.shouldRender` runs for *every* client entity every frame.
+  Half its time is `getRenderer(entity)` (13 samples `RegularImmutableMap.get` + 11 self, which is the
+  `invokedynamic typeSwitch`), and `getRenderer` is also called from `getPackedLightCoords` and `extractEntity`,
+  so 3x per visible entity per frame. The other half is the distance and frustum test.
+- **Rejected:** `doAnimateTick` reads the same position twice (`getBlockState`, then `getFluidState`). It's
+  equivalent in vanilla, but fluidlogging mods hook `LevelChunk.getFluidState`, and the gain is ~1.5% at 20 Hz.
+  Not worth the compatibility risk. Hand rendering cost is real GPU submission, not waste.
+- **Allocation:** render thread ~12-16 MiB/s, no site above ~7% (top: environment-attribute iterators,
+  `GlRenderPass` HashMaps). In singleplayer most GC pressure comes from integrated-server threads, so cutting
+  render-thread allocation would not measurably change GC pauses. No allocation "optimization" was claimed.
+- **Coverage check:** Sodium culls entities only per chunk section (`SodiumWorldRenderer.isEntityVisible` via the
+  section graph); it does not test per-entity occlusion and does not touch `getRenderer`. ImmediatelyFast
+  batches immediate-mode draws (HUD, text, entities) and EntityCulling does async per-entity raytracing; neither is
+  in the supported stack by default, and Nivium disables its own culling when EntityCulling is present.
+
 ## Open questions (highest impact first)
 - **Q-006** What causes the 0.2–1.4 s stalls in B-001? Test: re-run with the GC timeline on (1) the same
   fresh world and (2) a fully pre-generated area, at render distance 8 and 16.

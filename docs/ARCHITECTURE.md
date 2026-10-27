@@ -14,12 +14,21 @@ Client-only (`environment: "client"`). Nothing runs on servers; works on any ser
 | `client` | `...client.hud` | `FrameMeter` (per-frame timing, freeze detection), `NiviumHud` (overlay) | yes |
 | `client` | `...client.gui` | `NiviumScreen` (K) | yes |
 | `client` | `...client.perf` | `LowEndPreset` (FPS boost) | yes |
-| `client` | `...client.mixin` | `MinecraftMixin` (`runTick` HEAD), `ClientPacketListenerMixin` (`handleSetTime` TAIL) | yes |
+| `client` | `...client.mixin` | `MinecraftMixin` (`runTick` HEAD), `ClientPacketListenerMixin` (`handleSetTime` TAIL), `EntityRenderDispatcherMixin` (renderer-cache `@Redirect` ×3, occlusion `@ModifyReturnValue` on `shouldRender`), `EntityTypeMixin` / `EntityMixin` (cache slots) | yes |
+| `main` | `...cull` | `VoxelRay` (Amanatides-Woo voxel traversal) | no |
+| `client` | `...client.cull` | `EntityOcclusionCuller`, `CullData`, `CullHolder` | yes |
+| `client` | `...client.opt` | `NiviumOptimizations` (startup flags), `RendererCacheHolder` | yes |
+| `client` | `...client.bench` | `BenchHarness` (dev-only, `-Dnivium.bench.seconds`) | yes |
 
 All decision logic sits in `main` with no Minecraft types and is unit-tested.
 
 ## Data flow (render thread)
 ```
+LevelRenderer.extractVisibleEntities -> EntityRenderDispatcher.shouldRender(entity, frustum, cam)
+     getRenderer(entity) -> [Nivium] cached on EntityType (non-avatars)        also in getPackedLightCoords / extractEntity
+     vanilla distance + frustum (+ Sodium section check)
+     [Nivium] if still visible: EntityOcclusionCuller.isHidden -> cached CullData or 12 VoxelRay tests
+
 Minecraft.runTick HEAD   -> FrameMeter: frame time, 0.5 s FPS window, frame > 100 ms while playing -> StutterLog
 handleSetTime TAIL       -> ServerTpsEstimator.onTimeUpdate(nanoTime, gameTime)   (every 20 server ticks)
 JMX GC notifications     -> GcEventLog (synchronized ring, JMX thread)

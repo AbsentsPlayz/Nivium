@@ -1,5 +1,25 @@
 # Design decisions
 
+## D-010 Engine optimizations chosen from profiling (2026-10-27)
+The owner asked for real optimizations "like other mods", not presets or dashboards. Choices come from R-009:
+1. **Entity renderer cache** (`EntityRenderDispatcherMixin` + `EntityTypeMixin`). The renderer of a non-avatar
+   entity depends only on its type, so it is cached on the `EntityType` (about 150 objects, a few KB) and
+   invalidated by a generation counter bumped at `onResourceManagerReload` HEAD and TAIL. Players and mannequins
+   keep the vanilla path because their renderer follows the skin model, which can change. `@Redirect` on the
+   three call sites instead of a cancellable `@Inject` avoids a callback allocation per call.
+2. **Entity occlusion culling** (`EntityOcclusionCuller`, `VoxelRay`). Per-entity ray tests through the block grid
+   on the render thread (no worker thread, no world snapshot, no unsafe concurrency). Only `isSolidRender` blocks
+   occlude. 12 sample points on the enlarged AABB, any clear ray means visible. Results are cached (hidden rechecked
+   after 6 frames, visible after 10, or immediately when camera or entity moved 0.25 blocks). Exempt: avatars,
+   glowing/highlighted, named, leashed, camera vehicle, item frames/paintings/knots, display entities, ender
+   dragon, boxes > 8 blocks, anything within 3 blocks, spectator mode. Off when EntityCulling is installed.
+3. **Benchmark harness** (`BenchHarness`, `runBenchClient`, scenes none/occluded/visible): dev-only, activated by a
+   system property; makes every number in BENCHMARKING.md reproducible.
+- **Rejected:** `animateTick` fluid lookup shortcut (compatibility risk vs 1.5% at 20 Hz); hand-rendering and
+  GlRenderPass changes (real GPU work or deep blaze3d rewrites with Sodium/IF overlap); render-thread allocation
+  work (no dominant site; GC pressure is elsewhere).
+- Existing features (lag check, freeze labels, recommendations, overlay, FPS preset) are unchanged.
+
 ## D-009 Nivium becomes a player (client-side) mod (2026-10-27, owner's decision)
 The owner plays on other people's servers as a member and wants Nivium to help *them*, not the server.
 Server-side code cannot affect a server the player does not control, so it was removed rather than kept as an

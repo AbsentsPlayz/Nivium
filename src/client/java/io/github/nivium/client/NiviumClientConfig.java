@@ -27,6 +27,12 @@ public final class NiviumClientConfig {
 	/** Small FPS / frame-time readout in the top-left corner. */
 	public boolean fpsOverlay = false;
 
+	/** Engine optimization: cache entity renderers per entity type. Needs a restart to change. */
+	public boolean entityRendererCache = true;
+
+	/** Engine optimization: skip entities hidden behind opaque blocks. Needs a restart to change. */
+	public boolean entityOcclusionCulling = true;
+
 	/** The player's own video settings, saved when the FPS preset was applied; null when not applied. */
 	public @Nullable Map<String, String> savedSettings = null;
 

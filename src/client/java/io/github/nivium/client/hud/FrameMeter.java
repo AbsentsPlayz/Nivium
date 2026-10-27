@@ -1,5 +1,7 @@
 package io.github.nivium.client.hud;
 
+import io.github.nivium.client.bench.BenchHarness;
+import io.github.nivium.client.cull.EntityOcclusionCuller;
 import io.github.nivium.client.lag.LagMonitor;
 import io.github.nivium.stats.StutterLog;
 import io.github.nivium.stats.UptimeClock;
@@ -35,6 +37,10 @@ public final class FrameMeter {
 
 	public static void onFrameStart() {
 		long now = System.nanoTime();
+		EntityOcclusionCuller.onFrame();
+		if (BenchHarness.ENABLED) {
+			BenchHarness.onFrame(now);
+		}
 		Minecraft mc = Minecraft.getInstance();
 		boolean playing = mc.level != null && mc.screen == null && mc.isWindowActive();
 		if (lastFrameStart < 0) {

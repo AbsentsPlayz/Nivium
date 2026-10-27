@@ -5,6 +5,16 @@
 You install Nivium on your own PC. It works on any server (Hypixel, SMPs, friends' servers) without the
 server having it.
 
+## Engine optimizations
+- **Entity occlusion culling:** mobs, items and other entities completely hidden behind solid blocks are not
+  processed or drawn. Sodium only hides entities whose whole chunk section is hidden; Nivium also catches
+  entities behind walls inside visible sections. Measured: **+41% average FPS** (+26% to +60%) and 3.7× fewer
+  garbage collections with 180 mobs behind a wall; no measurable cost when nothing is hidden (docs/BENCHMARKING.md, B-003).
+  Safe by design: players, named, glowing, leashed and nearby entities, item frames, holograms and spectator mode
+  are never culled. Turns itself off if the EntityCulling mod is installed.
+- **Entity renderer cache:** removes a repeated renderer lookup (3× per entity per frame). Safe, but with no
+  measurable FPS change on its own.
+
 ## Features
 - **Lag check (press K):** answers "is the lag my PC, the server, or my connection?"
   - **Your PC:** FPS, frame time and freezes
@@ -21,7 +31,7 @@ Nivium cannot make someone else's server faster or lower your ping. It makes **y
 shows you where lag comes from. For the biggest FPS gain, use it together with **Sodium**.
 
 ## Build
-JDK 21+ (`JAVA_HOME`), then `gradlew build` → `build/libs/nivium-0.2.0.jar`.
+JDK 21+ (`JAVA_HOME`), then `gradlew build` → `build/libs/nivium-0.3.0.jar`.
 
 ## License
 [LGPL-3.0-only](LICENSE) (GPL-3.0 text in [COPYING](COPYING)).

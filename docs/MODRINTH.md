@@ -15,6 +15,14 @@ connection**, and gives your FPS a boost with one click.
 
 **Install it on your own PC. It works on any server**, and the server doesn't need it.
 
+### 🚀 Engine optimizations
+- **Entity occlusion culling:** mobs, items and other entities completely hidden behind solid blocks are skipped
+  entirely: not processed, not drawn. Great in villages, farms, caves and bases.
+  In our test with 180 mobs behind a wall: **+41% average FPS** and far fewer memory-cleanup pauses.
+  Safe: players, named and glowing mobs, item frames and holograms are never hidden.
+  Works with Sodium, and steps aside automatically if you use EntityCulling.
+- **Entity renderer cache:** removes repeated work Minecraft does for every entity, every frame.
+
 ### 🔍 Lag check (press **K**)
 - **Your PC:** FPS, frame time and freezes
 - **Server:** live TPS, estimated from the server's own time updates (works on any server)
