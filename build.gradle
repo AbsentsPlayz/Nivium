@@ -32,13 +32,6 @@ loom {
 			sourceSet sourceSets.client
 		}
 	}
-
-	runs {
-		// Separate from the client's run/ so the dev server never touches the singleplayer test world.
-		server {
-			runDir "run-server"
-		}
-	}
 }
 
 dependencies {

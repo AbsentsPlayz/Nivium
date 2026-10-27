@@ -1,22 +1,16 @@
 # Roadmap
 
 ## Done
-- [x] Vortex Optimizer 0.1.0: client benchmark tool, FPS overlay, client video preset (history: D-001 to D-007)
-- [x] **Nivium 0.2.0** (D-008): server-side continuous tick monitor, spike attribution (GC / save / tick work),
-      adaptive simulation distance with hysteresis, recommendations, `/nivium` commands, config with backup
-- [x] 24 JUnit tests (statistics, ring buffer, spike attribution, adaptive controller rules, config safety)
-- [x] Dedicated dev server boot verified: init, config create/load/backup, all commands, clean stop
+- [x] Vortex Optimizer 0.1.0: client benchmark tool, FPS overlay, client video preset (D-001 to D-007)
+- [x] Nivium server edition (D-008), then superseded by the player edition (D-009); kept in git history
+- [x] **Nivium 0.2.0 player edition:** lag check (PC / server TPS / ping), freeze detection with GC labels,
+      recommendations, FPS boost, overlay with TPS and ping, K screen
+- [x] 22 JUnit tests (TPS estimator, lag verdict, recommendations, freeze attribution, GC log)
+- [x] Mixin targets verified in the remapped jar (`handleSetTime` = `method_11079`, `runTick` = `method_1523`)
 
 ## Next (priority order)
-1. **Measure adaptive simulation distance under real load** on a server with players (farms, mobs). Log MSPT
-   before and after each step. Keep the feature only if the data shows a reduction.
-2. **Per-dimension tick cost** (`START/END_WORLD_TICK`): show which dimension is expensive, still with no world traversal.
-3. **Autosave spike mitigation**: research only. Check what vanilla 1.21.11 and Lithium/C2ME already do before
-   touching saving.
-4. Rename the GitHub repository to `nivium` and update `fabric.mod.json` contact URLs.
-5. Java 21 runtime test (dev runs used JDK 25).
-
-## Risks
-- Adaptive distance changes gameplay near the edge (farms beyond the reduced radius pause). That's why it is
-  slow, bounded, logged and reversible, with a single config switch to turn it off.
-- Integrated servers overwrite distances from the host's options every tick, so adaptation is off there by default.
+1. **In-game test on a real multiplayer server** by the owner: check the TPS estimate against a server's
+   own TPS readout, check freeze labels, and check FPS boost before and after.
+2. **Measure the FPS boost** with before/after numbers on the target laptop and put them in the Modrinth description.
+3. **Real engine-level FPS work** only after profiling (see Q-001/Q-006). Candidates must not duplicate Sodium.
+4. Java 21 runtime test (dev runs used JDK 25).

@@ -3,6 +3,7 @@
 	"package": "io.github.nivium.client.mixin",
 	"compatibilityLevel": "JAVA_21",
 	"client": [
+		"ClientPacketListenerMixin",
 		"MinecraftMixin"
 	],
 	"injectors": {

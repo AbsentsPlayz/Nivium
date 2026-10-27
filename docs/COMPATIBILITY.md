@@ -3,6 +3,7 @@
 ## Tested
 | Date | Setup | Result |
 |---|---|---|
+| 2026-10-27 | **Nivium 0.2.0 player edition** `gradlew build` | Compiles; 22/22 JUnit tests pass; remapped jar targets `method_11079` (`handleSetTime`) and `method_1523` (`runTick`). **Not yet run in-game** (the owner is testing it in their own Minecraft). |
 | 2026-10-27 | **Nivium 0.2.0** `gradlew build` | Compiles; 24/24 JUnit tests pass |
 | 2026-10-27 | **Nivium 0.2.0 dedicated dev server** (`runServer`, Fabric API 0.141.6, JDK 25, 0 players), 3 boots | Logs `Monitoring server ticks (dedicated server)`; config created on boot 1 and loaded unchanged on boots 2-3; `/nivium status/spikes/recommendations/adaptive/reload` all work from the console; `adaptive off/on` saved the config and wrote `nivium.json.bak` with the previous values; clean stop (exit 0). Two bugs found and fixed: the 60 s stats were never computed (`Long.MIN_VALUE` overflow) and view distance showed "not evaluated" while adaptation was off. **Not tested:** adaptive step-down under real load (needs players), Nivium on a real client/launcher, Java 21. |
 | 2026-10-26 | `gradlew build` (JDK 25.0.1, `release 21`), MC 1.21.11, Loader 0.20.1, Fabric API 0.141.6 | Compiles; 13/13 JUnit tests pass |

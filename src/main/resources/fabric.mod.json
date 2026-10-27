@@ -3,7 +3,7 @@
 	"id": "nivium",
 	"version": "${version}",
 	"name": "Nivium",
-	"description": "Advanced Minecraft Server Optimization: continuous tick monitoring, spike attribution and adaptive simulation distance. Server-side; players do not need it.",
+	"description": "Smoother Minecraft for players on any server: one-click FPS boost, an FPS/ping/TPS overlay, and a lag check that tells you whether lag comes from your PC, the server or your connection. Client-only.",
 	"authors": [
 		"AbsentsPlayz"
 	],
@@ -12,11 +12,8 @@
 		"issues": "https://github.com/AbsentsPlayz/nivium/issues"
 	},
 	"license": "LGPL-3.0-only",
-	"environment": "*",
+	"environment": "client",
 	"entrypoints": {
-		"main": [
-			"io.github.nivium.Nivium"
-		],
 		"client": [
 			"io.github.nivium.client.NiviumClient"
 		]
@@ -34,6 +31,6 @@
 		"fabric-api": "*"
 	},
 	"suggests": {
-		"lithium": "*"
+		"sodium": "*"
 	}
 }

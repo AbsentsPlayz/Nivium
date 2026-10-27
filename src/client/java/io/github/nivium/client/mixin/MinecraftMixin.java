@@ -8,10 +8,9 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
- * Frame boundary for the optional client FPS overlay. {@code Minecraft.runTick(boolean)} runs exactly once
+ * Frame boundary for FPS and stutter measurement. {@code Minecraft.runTick(boolean)} runs exactly once
  * per presented frame on the render thread. HEAD injection only adds a callback and coexists with other
- * mods' injections into the same method (Sodium 0.8.14 also targets it). When the overlay is off the hook
- * reads one boolean.
+ * mods' injections into the same method (Sodium 0.8.14 also targets it). Cost: one nanoTime() per frame.
  */
 @Mixin(Minecraft.class)
 abstract class MinecraftMixin {

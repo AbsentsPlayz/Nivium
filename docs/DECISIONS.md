@@ -1,5 +1,20 @@
 # Design decisions
 
+## D-009 Nivium becomes a player (client-side) mod (2026-10-27, owner's decision)
+The owner plays on other people's servers as a member and wants Nivium to help *them*, not the server.
+Server-side code cannot affect a server the player does not control, so it was removed rather than kept as an
+unused bonus (owner chose "Player mod" over "keep both").
+- **Removed:** tick monitor, adaptive simulation/view distance, server recommendations, `/nivium` commands,
+  `config/nivium.json`, `TimingStats` and `RollingTimes` (no remaining users). They are preserved in git history (commit e69544d).
+- **Added:** lag check (`LagVerdict`) that combines this PC's FPS and freezes, the server's TPS estimated from
+  `ClientboundSetTimePacket` (sent every 20 server ticks; game-time delta / real-time delta over 10 s, works on
+  any vanilla-protocol server) and ping (`PlayerInfo.getLatency`). Freeze detection (`StutterLog`, frames > 100 ms
+  while playing) with GC attribution (`GcEventLog`), which addresses the GC/low-RAM freezes measured in B-002.
+  Client recommendations (`ClientAdvice`) covering RAM, -Xmx, render distance and Sodium.
+- **Kept:** FPS boost preset (reversible), FPS overlay (now with a TPS/ping line), K screen, client config migration.
+- **Honesty:** the FPS gain comes from the preset's vanilla settings plus Sodium. The lag check measures; it
+  does not by itself make anything faster.
+
 ## D-008 Project becomes Nivium, a server-side optimizer (2026-10-27, owner's direction)
 - **Renamed** Vortex Optimizer → Nivium: mod id `nivium`, package `io.github.nivium`, version 0.2.0. Still
   Fabric, 1.21.11, Java 21; no platform switch.
