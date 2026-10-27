@@ -9,4 +9,4 @@ pluginManagement {
 	}
 }
 
-rootProject.name = 'vortex-optimizer'
+rootProject.name = 'nivium'

@@ -1,5 +1,27 @@
 # Design decisions
 
+## D-008 Project becomes Nivium, a server-side optimizer (2026-10-27, owner's direction)
+- **Renamed** Vortex Optimizer → Nivium: mod id `nivium`, package `io.github.nivium`, version 0.2.0. Still
+  Fabric, 1.21.11, Java 21; no platform switch.
+- **Removed the 20/60/120 s workflow:** `BenchmarkSession`, `BenchmarkResult`, `FrameRecorder`,
+  `ReportIndex`, `BenchmarkController`, `EnvironmentCollector`, `/vortex bench`, the benchmark buttons and
+  the REC HUD. It was a client frame-time benchmark, not a world scanner. No world-scanning or
+  scan-based preset code ever existed, so nothing like that had to be removed.
+- **Kept and reused:** `FrameStats` → `TimingStats` (spike rule now a parameter; used for MSPT),
+  `GcEventLog` (always-on ring, spike attribution), `JvmProbe`. The client extras (V screen, FPS overlay,
+  `LowEndPreset`) stay as an optional client module because they work and don't conflict with
+  server operation.
+- **The real optimization is adaptive simulation distance.** Chunks within simulation distance tick entities,
+  block entities, random and scheduled ticks, so it directly bounds tick work. Changing it live through
+  `PlayerList.setSimulationDistance` is supported vanilla behavior and is reversible. Safety comes from a
+  10 s mean (not spikes), a 30 s sustain, a 120 s recovery, a 45/30 ms hysteresis band, a 60 s cooldown, a
+  floor of 6, a ceiling at the admin's value, adopting outside changes instead of fighting them, restore
+  on stop, and staying off on integrated servers (the host client overwrites the value) and with ServerCore.
+  **Not yet measured under real load**: the dev server had no players, and Nivium deliberately does not
+  step down with 0 players.
+- **Not done:** no entity removal, no world edits, no async world access, no networking changes. Duplicating
+  Lithium-style tick optimizations was out of scope; Nivium recommends Lithium instead.
+
 ## D-001 Toolchain: Mojang mappings, pinned Loom 1.19.3 (2026-10-26)
 Follow the official 1.21.11 template (R-001) but pin `fabric-loom-remap` to the released `1.19.3`
 instead of `1.19-SNAPSHOT`, so builds are reproducible. Mojang mappings match Fabric's current

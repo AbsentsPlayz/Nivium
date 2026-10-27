@@ -1,27 +1,22 @@
 # Roadmap
 
 ## Done
-- [x] Project scaffold for MC 1.21.11 / Loader 0.20.1 / Fabric API 0.141.6 / Loom 1.19.3 / Gradle 9.8.2 / Mojang mappings
-- [x] Benchmark recorder (`/vortex bench`) with JSON+CSV reports, render-thread allocation, GC, CPU, environment capture
-- [x] Per-GC-event timeline in reports (spike attribution)
-- [x] In-game screen (V), FPS overlay, reversible FPS-boost preset (D-007)
-- [x] 20 JUnit tests
+- [x] Vortex Optimizer 0.1.0: client benchmark tool, FPS overlay, client video preset (history: D-001 to D-007)
+- [x] **Nivium 0.2.0** (D-008): server-side continuous tick monitor, spike attribution (GC / save / tick work),
+      adaptive simulation distance with hysteresis, recommendations, `/nivium` commands, config with backup
+- [x] 24 JUnit tests (statistics, ring buffer, spike attribution, adaptive controller rules, config safety)
+- [x] Dedicated dev server boot verified: init, config create/load/backup, all commands, clean stop
 
-## Next (in priority order)
-1. **Baseline capture on target hardware** (Intel iGPU, 8 GB): vanilla vs Sodium, cold + 3 warm runs at
-   8 and 12 chunks. Blocked on running the real game on that machine (needs a human at the keyboard or a
-   scripted camera path).
-2. **Scripted camera path** (`/vortex bench path ...`): deterministic flight across loaded chunks so runs
-   are comparable without manual input; also exercises chunk rebuild scheduling.
-3. **Chunk-load timing**: time from world join until all sections within render distance are built
-   (needs a Sodium-aware hook — investigate Q-002 first).
-4. **Allocation hotspot survey (Q-001)**: JFR `jdk.ObjectAllocationSample` on the render thread with Sodium,
-   rank allocation sites, pick the top site that Sodium/ImmediatelyFast do not already address.
-5. **Sodium surface inspection (Q-002, Q-004)**: list Sodium 0.8.14 mixin targets to map what it replaces.
-6. **Vulkan feasibility note (Q-005)**: research only; no code.
+## Next (priority order)
+1. **Measure adaptive simulation distance under real load** on a server with players (farms, mobs). Log MSPT
+   before and after each step. Keep the feature only if the data shows a reduction.
+2. **Per-dimension tick cost** (`START/END_WORLD_TICK`): show which dimension is expensive, still with no world traversal.
+3. **Autosave spike mitigation**: research only. Check what vanilla 1.21.11 and Lithium/C2ME already do before
+   touching saving.
+4. Rename the GitHub repository to `nivium` and update `fabric.mod.json` contact URLs.
+5. Java 21 runtime test (dev runs used JDK 25).
 
 ## Risks
-- Sodium 0.8.x internals change between betas; any Sodium-touching mixin must be guarded by version checks.
-- Gradle build is run with JDK 25 (`options.release = 21`); no standalone JDK 21 on the dev machine yet,
-  so the dev client also runs on 25. Release testing must use Java 21 (the version the vanilla launcher ships).
-- No Git on the dev machine: changes are not versioned yet.
+- Adaptive distance changes gameplay near the edge (farms beyond the reduced radius pause). That's why it is
+  slow, bounded, logged and reversible, with a single config switch to turn it off.
+- Integrated servers overwrite distances from the host's options every tick, so adaptation is off there by default.

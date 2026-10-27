@@ -1,50 +1,47 @@
-# Architecture
+# Architecture (Nivium 0.2.0)
 
 ## Modules
-| Source set | Package | Contents | Depends on Minecraft? |
+| Source set | Package | Contents | Minecraft types? |
 |---|---|---|---|
-| `main` | `io.github.vortexoptimizer` | `VortexOptimizer` (constants, logger) | no |
-| `main` | `io.github.vortexoptimizer.bench` | `FrameRecorder`, `FrameStats`, `BenchmarkSession`, `BenchmarkResult`, `JvmProbe` | no (Gson only) |
-| `client` | `io.github.vortexoptimizer.client` | `VortexOptimizerClient` (entrypoint, `/vortex` commands) | yes |
-| `client` | `...client.bench` | `BenchmarkController`, `EnvironmentCollector` | yes |
-| `client` | `...client.mixin` | `MinecraftMixin` | yes |
-| `client` | `...client.gui` | `VortexScreen` (key V) | yes |
-| `client` | `...client.hud` | `FrameMeter`, `VortexHud` (Fabric `HudElementRegistry`) | yes |
-| `client` | `...client.perf` | `LowEndPreset` | yes |
-| `client` | `...client` | `VortexConfig` (`config/vortexoptimizer.json`) | yes |
-| `main` | `...bench` | `GcEventLog` (per-GC timeline), `ReportIndex` (reads saved reports) | no |
+| `main` | `io.github.nivium` | `Nivium` (ModInitializer: wires events, owns state) | yes |
+| `main` | `...stats` | `TimingStats`, `GcEventLog`, `JvmProbe` | no |
+| `main` | `...monitor` | `RollingTimes`, `SpikeLog` (pure); `TickMonitor`, `PerformanceSnapshot` | partly |
+| `main` | `...optimize` | `AdaptiveController` (pure decision logic); `AdaptiveDistances`, `Recommendations` | partly |
+| `main` | `...config` | `NiviumConfig` (load / upgrade with backup / validate) | no |
+| `main` | `...command` | `NiviumCommands` (`/nivium ...`) | yes |
+| `main` | `...compat` | `ModCompat` (Lithium, ServerCore, FerriteCore, C2ME detection) | no |
+| `client` | `io.github.nivium.client...` | `NiviumClient`, `NiviumScreen` (K), `NiviumHud`, `FrameMeter`, `LowEndPreset`, `NiviumClientConfig`, `MinecraftMixin` | yes |
 
-Pure logic lives in `main` and is unit-tested with JUnit 5 without launching the game.
+`fabric.mod.json`: `environment: "*"`. The main entrypoint runs on dedicated and integrated servers; the
+client entrypoint and its mixin load only on clients. Players connecting to a Nivium server need nothing.
 
-## Benchmark execution flow
+## Server execution flow (all on the server thread)
 ```
-/vortex bench start [seconds] [warmupFrames] [label]
-  -> BenchmarkController.start(): capture EnvironmentCollector snapshot, create BenchmarkSession
-every frame (render thread):
-  Minecraft.runTick HEAD -> MinecraftMixin -> BenchmarkController.onFrameStart()
-     -> session.onFrameBoundary(System.nanoTime())
-        - first call: baseline; warm-up frames discarded
-        - then: record (frameNanos, renderThreadAllocatedBytes) into preallocated arrays
-        - heap sampled every 250 ms
-        - auto-finish on duration or buffer overflow
-finish:
-  -> GC / CPU / heap deltas computed, second settings snapshot compared with the first
-  -> summary to chat + log
-  -> JSON + CSV written to <gameDir>/vortex-benchmarks/ on a ForkJoinPool thread
-disconnect -> session cancelled (no report)
+SERVER_STARTING  -> GC listener on, new TickMonitor + AdaptiveDistances
+START_SERVER_TICK-> TickMonitor.onTickStart: nanoTime, interval -> ring (TPS)
+BEFORE_SAVE      -> mark this tick as saving (spike attribution)
+END_SERVER_TICK  -> duration -> ring; > threshold => SpikeLog
+   every 20 ticks:
+     publish PerformanceSnapshot (5 s stats each second; 60 s stats every 5 s, every 15 s when overloaded)
+     AdaptiveDistances.evaluate(mean MSPT over 10 s)   (skipped during /tick sprint or freeze)
+     rate-limited spike summary log; optional status log
+SERVER_STOPPING  -> restore every reduced distance, GC listener off
 ```
-Idle cost per frame: one static field read and a null check.
+Per-tick cost: two `nanoTime()` calls, two array writes, one comparison.
+Per-second cost: a 200-element mean, a 100-element sort, a loop over dimensions reading a counter.
 
 ## Threading
-- All controller/session state: render thread only (commands execute on the client thread).
-- File I/O: `CompletableFuture.supplyAsync` (common pool); completion message re-posted with
-  `Minecraft.execute`.
+- Every Minecraft object is read on the server thread only.
+- `GcEventLog` is filled by a JMX notification thread (synchronized ring).
+- `PerformanceSnapshot` is immutable and published through a volatile field, which is how the singleplayer
+  client screen reads it from the render thread.
 
 ## Integration points
-| Point | Mechanism | Why |
-|---|---|---|
-| `Minecraft#runTick(boolean)` | `@Inject HEAD` | Per-frame boundary (D-003) |
-| Client commands | Fabric API `ClientCommandRegistrationCallback` | Supported API, no mixin |
-| Disconnect | Fabric API `ClientPlayConnectionEvents.DISCONNECT` | Supported API |
-| Key V | Fabric `KeyBindingHelper` + `KeyMapping.Category.register` (1.21.9+ category API) | Rebindable in Controls |
-| HUD | Fabric `HudElementRegistry.addLast` | Drawn after vanilla HUD, hidden with F1 / F3 |
+| Point | Mechanism |
+|---|---|
+| Tick timing | Fabric `ServerTickEvents.START/END_SERVER_TICK` (no mixin) |
+| Save attribution | Fabric `ServerLifecycleEvents.BEFORE_SAVE` |
+| Start/stop | Fabric `ServerLifecycleEvents.SERVER_STARTING/STOPPING` |
+| Distances | vanilla `PlayerList.get/setSimulationDistance`, `get/setViewDistance` (live, not persisted) |
+| Commands | Fabric `CommandRegistrationCallback`, `Commands.hasPermission(LEVEL_GAMEMASTERS)` (1.21.11 API) |
+| Client key K / HUD / frame hook | Fabric `KeyBindingHelper`, `HudElementRegistry`; `Minecraft#runTick` HEAD inject |

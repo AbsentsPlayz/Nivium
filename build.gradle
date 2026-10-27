@@ -27,9 +27,16 @@ loom {
 	splitEnvironmentSourceSets()
 
 	mods {
-		"vortexoptimizer" {
+		"nivium" {
 			sourceSet sourceSets.main
 			sourceSet sourceSets.client
+		}
+	}
+
+	runs {
+		// Separate from the client's run/ so the dev server never touches the singleplayer test world.
+		server {
+			runDir "run-server"
 		}
 	}
 }
@@ -40,8 +47,8 @@ dependencies {
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
 
-	// Sodium is only put on the dev runtime so `runClient` exercises the Sodium + Vortex combination.
-	// Vortex does not compile against Sodium and must keep working without it.
+	// Sodium is only put on the dev client runtime so `runClient` exercises Nivium next to Sodium.
+	// Nivium does not compile against Sodium and must keep working without it.
 	modLocalRuntime "maven.modrinth:sodium:${project.sodium_version}"
 
 	testImplementation platform('org.junit:junit-bom:5.11.4')
