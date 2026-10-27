@@ -21,7 +21,6 @@ connection**, and gives your FPS a boost with one click.
   In our test with 180 mobs behind a wall: **+41% average FPS** and far fewer memory-cleanup pauses.
   Safe: players, named and glowing mobs, item frames and holograms are never hidden.
   Works with Sodium, and steps aside automatically if you use EntityCulling.
-- **Entity renderer cache:** removes repeated work Minecraft does for every entity, every frame.
 
 ### 🔍 Lag check (press **K**)
 - **Your PC:** FPS, frame time and freezes

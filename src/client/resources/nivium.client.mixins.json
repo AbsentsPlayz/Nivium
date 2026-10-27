@@ -6,7 +6,6 @@
 		"ClientPacketListenerMixin",
 		"EntityMixin",
 		"EntityRenderDispatcherMixin",
-		"EntityTypeMixin",
 		"MinecraftMixin"
 	],
 	"injectors": {

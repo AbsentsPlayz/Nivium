@@ -3,6 +3,8 @@
 ## Tested
 | Date | Setup | Result |
 |---|---|---|
+| 2026-10-27 | **0.3.0 in the owner's launcher** (Fabric Loader 0.18.x) | **Crash on start** (MixinExtras 0.5.0 vs array-valued `@Redirect.at`). See D-011. |
+| 2026-10-27 | **0.3.1**, dev client on **Fabric Loader 0.18.4 / MixinExtras 0.5.0** + Sodium 0.8.14, occluded scene | Loads; culling on; 177 of 178 hidden entities culled per frame; no `@Redirect` in any mixin of the built jar. |
 | 2026-10-27 | **Nivium + entity optimizations**, dev client, Sodium 0.8.14, Fabric API 0.141.6, JDK 25, 15 automated runs | All mixins apply alongside Sodium's (no conflicts or errors; `EntityRenderDispatcherMixin` `@Redirect` ×3 + `@ModifyReturnValue`). Culling verified active: 180/181 hidden entities culled per frame in the occluded scene, 0 in the visible scene. 36/36 JUnit tests pass. **Not tested:** EntityCulling / ImmediatelyFast / Iris installed together, multiplayer servers, Java 21 runtime. |
 | 2026-10-27 | **Nivium 0.2.0 player edition** `gradlew build` | Compiles; 22/22 JUnit tests pass; remapped jar targets `method_11079` (`handleSetTime`) and `method_1523` (`runTick`). **Not yet run in-game** (the owner is testing it in their own Minecraft). |
 | 2026-10-27 | **Nivium 0.2.0** `gradlew build` | Compiles; 24/24 JUnit tests pass |

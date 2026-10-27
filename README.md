@@ -12,8 +12,6 @@ server having it.
   garbage collections with 180 mobs behind a wall; no measurable cost when nothing is hidden (docs/BENCHMARKING.md, B-003).
   Safe by design: players, named, glowing, leashed and nearby entities, item frames, holograms and spectator mode
   are never culled. Turns itself off if the EntityCulling mod is installed.
-- **Entity renderer cache:** removes a repeated renderer lookup (3× per entity per frame). Safe, but with no
-  measurable FPS change on its own.
 
 ## Features
 - **Lag check (press K):** answers "is the lag my PC, the server, or my connection?"
@@ -31,7 +29,7 @@ Nivium cannot make someone else's server faster or lower your ping. It makes **y
 shows you where lag comes from. For the biggest FPS gain, use it together with **Sodium**.
 
 ## Build
-JDK 21+ (`JAVA_HOME`), then `gradlew build` → `build/libs/nivium-0.3.0.jar`.
+JDK 21+ (`JAVA_HOME`), then `gradlew build` → `build/libs/nivium-0.3.1.jar`.
 
 ## License
 [LGPL-3.0-only](LICENSE) (GPL-3.0 text in [COPYING](COPYING)).

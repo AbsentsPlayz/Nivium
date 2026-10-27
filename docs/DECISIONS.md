@@ -1,5 +1,18 @@
 # Design decisions
 
+## D-011 Remove the entity renderer cache after a load crash (0.3.1, 2026-10-27)
+The owner's game crashed on start with 0.3.0: `Mixin transformation of net.minecraft.class_898 failed`,
+`ClassCastException: ArrayList cannot be cast to AnnotationNode` in MixinExtras' `FactoryRedirectWrapperMixinTransformer`.
+- **Root cause (verified with javap):** MixinExtras 0.5.0 (bundled with Fabric Loader 0.18.x) inspects every
+  `@Redirect` on a target class and casts its `at` value to a single annotation (MixinExtras 0.5.5 iterates a list).
+  Our jar, compiled against newer Fabric Mixin, stores `@Redirect(at = ...)` as an array, so the cast failed.
+  The dev environment had not shown it.
+- **Fix:** the only `@Redirect` belonged to the renderer cache, which had **no measurable FPS benefit** (B-003).
+  Removed it rather than reworking it. The built 0.3.1 jar contains no `@Redirect`. Verified on Fabric Loader 0.18.4 /
+  MixinExtras 0.5.0: loads, and culling still culls ~177/178 hidden entities per frame.
+- **Rule going forward:** no `@Redirect` in Nivium. Use MixinExtras injectors (`@WrapOperation`, `@ModifyReturnValue`)
+  or plain `@Inject`, and test on the oldest supported Fabric Loader (0.17.x/0.18.x), not only on the dev loader.
+
 ## D-010 Engine optimizations chosen from profiling (2026-10-27)
 The owner asked for real optimizations "like other mods", not presets or dashboards. Choices come from R-009:
 1. **Entity renderer cache** (`EntityRenderDispatcherMixin` + `EntityTypeMixin`). The renderer of a non-avatar
